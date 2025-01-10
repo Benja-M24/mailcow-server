@@ -300,10 +300,10 @@ sed -i "s/__IPV4_SOGO__/${IPV4_NETWORK}.248/g" /etc/dovecot/lua/passwd-verify.lu
 
 
 # Migrate old sieve_after file
-[[ -f /etc/dovecot/sieve_after ]] && mv /etc/dovecot/sieve_after /etc/dovecot/global_sieve_after
+[[ -f /etc/dovecot/sieve_after ]] && mv /etc/dovecot/sieve_after /etc/dovecot/global_sieve_after.sieve
 # Create global sieve scripts
 cat /etc/dovecot/global_sieve_after > /var/vmail/sieve/global_sieve_after.sieve
-cat /etc/dovecot/global_sieve_before > /var/vmail/sieve/global_sieve_before.sieve
+cat /etc/dovecot/global_sieve_before.sieve > /var/vmail/sieve/global_sieve_before.sieve
 
 # Check permissions of vmail/index/garbage directories.
 # Do not do this every start-up, it may take a very long time. So we use a stat check here.

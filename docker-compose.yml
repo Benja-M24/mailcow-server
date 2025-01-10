@@ -130,8 +130,8 @@ services:
         - ./data/conf/phpfpm/php-conf.d/opcache-recommended.ini:/usr/local/etc/php/conf.d/opcache-recommended.ini:Z
         - ./data/conf/phpfpm/php-conf.d/upload.ini:/usr/local/etc/php/conf.d/upload.ini:Z
         - ./data/conf/phpfpm/php-conf.d/other.ini:/usr/local/etc/php/conf.d/zzz-other.ini:Z
-        - ./data/conf/dovecot/global_sieve_before:/global_sieve/before:z
-        - ./data/conf/dovecot/global_sieve_after:/global_sieve/after:z
+        - ./data/conf/dovecot/global_sieve_before.sieve:/global_sieve/before:z
+        - ./data/conf/dovecot/global_sieve_after.sieve:/global_sieve/after:z
         - ./data/assets/templates:/tpls:z
         - ./data/conf/nginx/:/etc/nginx/conf.d/:z
       dns:
@@ -310,7 +310,6 @@ services:
           hard: 40000
       networks:
         traefik-server:
-          external: true
         mailcow-network:
           ipv4_address: ${IPV4_NETWORK:-172.22.1}.250
           aliases:
@@ -358,7 +357,6 @@ services:
         - ${IPV4_NETWORK:-172.22.1}.254
       networks:
         traefik-server:
-          external: true
         mailcow-network:
           ipv4_address: ${IPV4_NETWORK:-172.22.1}.253
           aliases:
@@ -392,7 +390,7 @@ services:
         until ping phpfpm -c1 > /dev/null; do sleep 1; done &&
         until ping sogo -c1 > /dev/null; do sleep 1; done &&
         until ping redis -c1 > /dev/null; do sleep 1; done &&
-        until ping rspamd -c1 > /dev/null; do sleep 1; done &&e
+        until ping rspamd -c1 > /dev/null; do sleep 1; done &&
         exec nginx -g 'daemon off;'"
       environment:
         - HTTPS_PORT=${HTTPS_PORT:-443}
@@ -427,7 +425,6 @@ services:
       restart: always
       networks:
         traefik-server:
-          external: true
         mailcow-network:
           aliases:
             - nginx
@@ -675,6 +672,8 @@ services:
         - /lib/modules:/lib/modules:ro
 
 networks:
+  traefik-server:
+    external: true
   mailcow-network:
     driver: bridge
     driver_opts:
