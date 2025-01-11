@@ -110,12 +110,18 @@ services:
         mailcow-network:
           aliases:
             - rspamd
+      healthcheck:
+        test: ["CMD", "rspamd", "--version"]
+        interval: 10s
+        timeout: 5s
+        retries: 3
 
     php-fpm-mailcow:
       image: mailcow/phpfpm:1.91.1
       command: "php-fpm -d date.timezone=${TZ} -d expose_php=0"
       depends_on:
         - redis-mailcow
+        - mysql-mailcow
       volumes:
         - ./data/hooks/phpfpm:/hooks:Z
         - ./data/web:/web:z
