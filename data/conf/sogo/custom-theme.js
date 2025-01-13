@@ -1,7 +1,8 @@
+/* EXAMPLE - EXAMPLE - EXAMPLE - EXAMPLE - EXAMPLE - EXAMPLE - EXAMPLE
 (function() {
   'use strict';
   angular.module('SOGo.Common')
-    .config(configure);
+    .config(configure)
 
   configure.$inject = ['$mdThemingProvider'];
   function configure($mdThemingProvider) {
@@ -32,3 +33,4 @@
     $mdThemingProvider.generateThemesOnDemand(false);
   }
 })();
+ */
