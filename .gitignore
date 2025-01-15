@@ -70,3 +70,7 @@ rebuild-images.sh
 refresh_images.sh
 update_diffs/
 create_cold_standby.sh
+helper-scripts/docker-compose.override.yml.d/BUILD_FLAGS/docker-compose.override.yml
+helper-scripts/docker-compose.override.yml.d/EXTERNAL_DNS/docker-compose.override.yml
+helper-scripts/docker-compose.override.yml.d/HAPROXY/docker-compose.override.yml
+helper-scripts/docker-compose.override.yml.d/EXTERNAL_MYSQL_SOCKET/docker-compose.override.yml
