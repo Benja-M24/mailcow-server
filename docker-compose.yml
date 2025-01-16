@@ -270,38 +270,49 @@ services:
         - FLATCURVE_EXPERIMENTAL=${FLATCURVE_EXPERIMENTAL:-n}
       ports:
         - "${DOVEADM_PORT:-127.0.0.1:19991}:12345"
-        - "${IMAP_PORT:-143}:143"
-        - "${IMAPS_PORT:-993}:993"
+        # - "${IMAP_PORT:-143}:143"
+        # - "${IMAPS_PORT:-993}:993"
         - "${POP_PORT:-110}:110"
         - "${POPS_PORT:-995}:995"
         - "${SIEVE_PORT:-4190}:4190"
       restart: always
       tty: true
       labels:
-        ofelia.enabled: "true"
-        ofelia.job-exec.dovecot_imapsync_runner.schedule: "@every 1m"
-        ofelia.job-exec.dovecot_imapsync_runner.no-overlap: "true"
-        ofelia.job-exec.dovecot_imapsync_runner.command: "/bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu nobody /usr/local/bin/imapsync_runner.pl || exit 0\""
-        ofelia.job-exec.dovecot_trim_logs.schedule: "@every 1m"
-        ofelia.job-exec.dovecot_trim_logs.command: "/bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu vmail /usr/local/bin/trim_logs.sh || exit 0\""
-        ofelia.job-exec.dovecot_quarantine.schedule: "@every 20m"
-        ofelia.job-exec.dovecot_quarantine.command: "/bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu vmail /usr/local/bin/quarantine_notify.py || exit 0\""
-        ofelia.job-exec.dovecot_clean_q_aged.schedule: "@every 24h"
-        ofelia.job-exec.dovecot_clean_q_aged.command: "/bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu vmail /usr/local/bin/clean_q_aged.sh || exit 0\""
-        ofelia.job-exec.dovecot_maildir_gc.schedule: "@every 30m"
-        ofelia.job-exec.dovecot_maildir_gc.command: "/bin/bash -c \"source /source_env.sh ; /usr/local/bin/gosu vmail /usr/local/bin/maildir_gc.sh\""
-        ofelia.job-exec.dovecot_sarules.schedule: "@every 24h"
-        ofelia.job-exec.dovecot_sarules.command: "/bin/bash -c \"/usr/local/bin/sa-rules.sh\""
-        ofelia.job-exec.dovecot_fts.schedule: "@every 24h"
-        ofelia.job-exec.dovecot_fts.command: "/bin/bash -c \"/usr/local/bin/gosu vmail /usr/local/bin/optimize-fts.sh\""
-        ofelia.job-exec.dovecot_repl_health.schedule: "@every 5m"
-        ofelia.job-exec.dovecot_repl_health.command: "/bin/bash -c \"/usr/local/bin/gosu vmail /usr/local/bin/repl_health.sh\""
+        - traefik.enable=true
+        # ConfiguIMAP (port 143)
+        - traefik.tcp.routers.dovecot-imap.rule=HostSNI(`*`)
+        - traefik.tcp.routers.dovecot-imap.entrypoints=imap
+        - traefik.tcp.services.dovecot-imap.loadbalancer.server.port=143
+        # Config IMAPS (port 993)
+        - traefik.tcp.routers.dovecot-imaps.rule=HostSNI(`*`)
+        - traefik.tcp.routers.dovecot-imaps.entrypoints=imaps
+        - traefik.tcp.services.dovecot-imaps.loadbalancer.server.port=993
+        # Config Ofelia
+        - "ofelia.enabled: true"
+        - "ofelia.job-exec.dovecot_imapsync_runner.schedule: @every 1m"
+        - "ofelia.job-exec.dovecot_imapsync_runner.no-overlap: true"
+        - "ofelia.job-exec.dovecot_imapsync_runner.command: /bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu nobody /usr/local/bin/imapsync_runner.pl || exit 0\""
+        - "ofelia.job-exec.dovecot_trim_logs.schedule: @every 1m"
+        - "ofelia.job-exec.dovecot_trim_logs.command: /bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu vmail /usr/local/bin/trim_logs.sh || exit 0\""
+        - "ofelia.job-exec.dovecot_quarantine.schedule: @every 20m"
+        - "ofelia.job-exec.dovecot_quarantine.command: /bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu vmail /usr/local/bin/quarantine_notify.py || exit 0\""
+        - "ofelia.job-exec.dovecot_clean_q_aged.schedule: @every 24h"
+        - "ofelia.job-exec.dovecot_clean_q_aged.command: /bin/bash -c \"[[ $${MASTER} == y ]] && /usr/local/bin/gosu vmail /usr/local/bin/clean_q_aged.sh || exit 0\""
+        - "ofelia.job-exec.dovecot_maildir_gc.schedule: @every 30m"
+        - "ofelia.job-exec.dovecot_maildir_gc.command: /bin/bash -c \"source /source_env.sh ; /usr/local/bin/gosu vmail /usr/local/bin/maildir_gc.sh\""
+        - "ofelia.job-exec.dovecot_sarules.schedule: @every 24h"
+        - "ofelia.job-exec.dovecot_sarules.command: /bin/bash -c \"/usr/local/bin/sa-rules.sh\""
+        - "ofelia.job-exec.dovecot_fts.schedule: @every 24h"
+        - "ofelia.job-exec.dovecot_fts.command: /bin/bash -c \"/usr/local/bin/gosu vmail /usr/local/bin/optimize-fts.sh\""
+        - "ofelia.job-exec.dovecot_repl_health.schedule: @every 5m"
+        - "ofelia.job-exec.dovecot_repl_health.command: /bin/bash -c \"/usr/local/bin/gosu vmail /usr/local/bin/repl_health.sh\""
       ulimits:
         nproc: 65535
         nofile:
           soft: 20000
           hard: 40000
       networks:
+        traefik-server:
         mailcow-network:
           ipv4_address: ${IPV4_NETWORK:-172.22.1}.250
           aliases:
@@ -332,12 +343,27 @@ services:
         - REDIS_SLAVEOF_PORT=${REDIS_SLAVEOF_PORT:-}
         - MAILCOW_HOSTNAME=${MAILCOW_HOSTNAME}
         - SPAMHAUS_DQS_KEY=${SPAMHAUS_DQS_KEY:-}
+      labels:
+      - traefik.enable=true
+      # Config SMTP (port 25)
+      - traefik.tcp.routers.postfix-smtp.rule=HostSNI(`*`)
+      - traefik.tcp.routers.postfix-smtp.entrypoints=smtp
+      - traefik.tcp.services.postfix-smtp.loadbalancer.server.port=25
+      # Config SMTPS (port 465)
+      - traefik.tcp.routers.postfix-smtps.rule=HostSNI(`*`)
+      - traefik.tcp.routers.postfix-smtps.entrypoints=smtps
+      - traefik.tcp.services.postfix-smtps.loadbalancer.server.port=465
+      # Config Submission (port 587)
+      - traefik.tcp.routers.postfix-submission.rule=HostSNI(`*`)
+      - traefik.tcp.routers.postfix-submission.entrypoints=submission
+      - traefik.tcp.services.postfix-submission.loadbalancer.server.port=587
       cap_add:
         - NET_BIND_SERVICE
       restart: always
       dns:
         - ${IPV4_NETWORK:-172.22.1}.254
       networks:
+        traefik-server:
         mailcow-network:
           ipv4_address: ${IPV4_NETWORK:-172.22.1}.253
           aliases:
