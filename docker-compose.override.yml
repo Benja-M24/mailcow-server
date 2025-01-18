@@ -11,8 +11,8 @@ services:
         traefik.http.routers.mailcow-web.service: "mailcow-web-service"
         traefik.http.routers.mailcow-web.tls: "true"
         traefik.http.routers.mailcow-web.tls.certresolver: "le"
-        traefik.http.services.mailcow-web.loadbalancer.server.port: "${HTTP_PORT}"
         traefik.http.routers.mailcow-web.entrypoints: "https"
+        traefik.http.services.mailcow-web-service.loadbalancer.server.port: "${HTTP_PORT}"
         traefik.docker.network: "traefik-server"
         # traefik.http.middlewares.mailcow-https-redirect.redirectscheme.scheme: "https"
         # traefik.http.middlewares.mailcow-https-redirect.redirectscheme.permanent: "true"
@@ -34,15 +34,15 @@ services:
         traefik.tcp.routers.postfix-smtp.rule: "HostSNI(`*`)"
         traefik.tcp.routers.postfix-smtp.service: "postfix-smtp-service"
         traefik.tcp.routers.postfix-smtp.entrypoints: "smtp"
-        traefik.tcp.services.postfix-smtp.loadbalancer.server.port: "25"
+        traefik.tcp.services.postfix-smtp-service.loadbalancer.server.port: "25"
         traefik.tcp.routers.postfix-smtps.rule: "HostSNI(`*`)"
         traefik.tcp.routers.postfix-smtps.service: "postfix-smtps-service"
         traefik.tcp.routers.postfix-smtps.entrypoints: "smtps"
-        traefik.tcp.services.postfix-smtps.loadbalancer.server.port: "465"
+        traefik.tcp.services.postfix-smtps-service.loadbalancer.server.port: "465"
         traefik.tcp.routers.postfix-submission.rule: "HostSNI(`*`)"
         traefik.tcp.routers.postfix-submission.service: "postfix-submission-service"
         traefik.tcp.routers.postfix-submission.entrypoints: "submission"
-        traefik.tcp.services.postfix-submission.loadbalancer.server.port: "587"
+        traefik.tcp.services.postfix-submission-service.loadbalancer.server.port: "587"
 
     dovecot-mailcow:
       networks:
@@ -54,11 +54,11 @@ services:
         traefik.tcp.routers.dovecot-imap.rule: "HostSNI(`*`)"
         traefik.tcp.routers.dovecot-imap.service: "dovecot-imap-service"
         traefik.tcp.routers.dovecot-imap.entrypoints: "imap"
-        traefik.tcp.services.dovecot-imap.loadbalancer.server.port: "143"
+        traefik.tcp.services.dovecot-imap-service.loadbalancer.server.port: "143"
         traefik.tcp.routers.dovecot-imaps.rule: "HostSNI(`*`)"
         traefik.tcp.routers.dovecot-imaps.service: "dovecot-imaps-service"
         traefik.tcp.routers.dovecot-imaps.entrypoints: "imaps"
-        traefik.tcp.services.dovecot-imaps.loadbalancer.server.port: "993"
+        traefik.tcp.services.dovecot-imaps-service.loadbalancer.server.port: "993"
         
     certdumper:
         image: ghcr.io/kereis/traefik-certs-dumper
